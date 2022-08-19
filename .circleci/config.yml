@@ -15,7 +15,7 @@ jobs:
         - run: echo "hello world" # run the `echo` command
 
 commands:
-   # Exercise Roll-back
+   # Exercise Rollback
   destroy_environment:
     steps:
       - run:
@@ -89,6 +89,6 @@ workflows:
     jobs:
       #- create_infrastructure
       #- configure_infrastructure
-      - smoke_test
-      - Roll-back
-      - 
+      #- smoke_test
+      - destroy_environment
+      
