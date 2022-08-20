@@ -4,7 +4,7 @@ orbs:
   # Choose either one of the orbs below
   # welcome: circleci/welcome-orb@0.4.1
    #aws-cli: circleci/aws-cli@2.0.3
-# Define the jobs we want to run for this project
+
 jobs:
   build:
       # The primary container, where your job's commands will run
@@ -80,7 +80,7 @@ commands:
             else
               return 1
             fi
-      - destroy_environment    
+        
 
   # Job 1
   # Executes the bucket.yml - Deploy an S3 bucket, and interface with that bucket to synchronize the files between local and the bucket.
@@ -90,30 +90,61 @@ commands:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run:
-          name: Execute bucket.yml - Create Cloudformation Stack
-          command: |
-            aws cloudformation deploy \
-            --template-file bucket.yml \
-            --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
-            --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
-      # Uncomment the step below if yoou wish to upload all contents of the current directory to the new S3 bucket
-      - run: aws s3 sync . s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
-  
-  workflows:
-    # Name the workflow
-      myWorkflow:
-        jobs:
-          #- create_infrastructure
-          #- configure_infrastructure
-          #- smoke_test
-          - create_and_deploy_front_end
-          #- promote_to_production:
-          #    requires: 
-           #     - create_and_deploy_front_end
-          #- get_last_deployment_id
-          #- clean_up_old_front_end:
-           #   requires:
-             #   - get_last_deployment_id
-              #  - promote_to_production
-      
+      - run: |
+          aws cloudformation deploy \
+          --template-file bucket.yml \
+          --stack-name "Swetha-${CIRCLE_WORKFLOW_ID:0:7}" \
+          --parameter-overrides NAME=${CIRCLE_WORKFLOW_ID:0:7}
+      - run: |
+          aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
+  get_last_deployment_id:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - run: yum install -y tar
+      - run: yum install -y gzip
+      - run: |
+          aws cloudformation \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+            --no-paginate --output text  >> ~/output.txt
+          cat ~/output.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output.txt
+
+  promote_to_production:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: |
+          aws cloudformation deploy \
+            --template-file cloudfront.yml \
+            --stack-name production-distro \
+            --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID}
+    
+  clean_up_old_front_end:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: |
+          aws s3 rm "s3://${OldPipelineID}" --recursive
+          aws cloudformation delete-stack --stack-name "${OldPipelineID}"
+      - attach_workspace:
+          at: ~/
+workflows:
+  my_workflow:
+    jobs:
+      -  create_and_deploy_front_end
+      -  get_last_deployment_id:
+            requires: 
+              -  create_and_deploy_front_end
+      -  promote_to_production:
+            requires: 
+              -  create_and_deploy_front_end
+      -  clean_up_old_front_end:
+            requires: 
+              -  get_last_deployment_id
+    
