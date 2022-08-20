@@ -1,7 +1,7 @@
 Parameters:
 
   TheBucket:
-  Description: Name of S3 bucket to create
+    Description: Name of S3 bucket to create
     Type: String
 Resources:
   WebsiteBucket:
