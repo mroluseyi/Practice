@@ -1,7 +1,7 @@
 Parameters:
   # Existing Bucket name
   PipelineID:
-    Description: Existing Bucket name
+    Description: Unique name
     Type: String
 Resources:
   CloudFrontOriginAccessIdentity:
