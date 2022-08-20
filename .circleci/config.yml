@@ -60,7 +60,21 @@ jobs:
       - attach_workspace:
           at: ~/
       - run: cat ~/output.txt 
- 
+  
+  # Exercise: Infrastructure Creation
+  # Exercise - Rollback
+  create_infrastructure: 
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Create Cloudformation Stack
+          command: |
+            aws cloudformation deploy \
+              --template-file template.yml \
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --region us-east-1
 
 
 workflows:
@@ -70,8 +84,8 @@ workflows:
     jobs:
       # - welcome/run
       #- print_greetings
-      - upload_file
-      - download_file:
-          requires:
-           - upload_file
-      
+      #- upload_file
+      #- download_file:
+      #    requires:
+      #     - upload_file
+      - create_infrastructure
