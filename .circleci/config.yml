@@ -19,15 +19,14 @@ commands:
       - run: echo << parameters.id >>
 
   # Exercise - Rollback
-  destroy_environment:
-    steps:
-      - run:
-          name: Destroy environment
-          # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable 
-          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID 
-          when: on_fail
-          command: |
-            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
+  #destroy_environment:
+   # steps:
+    #  - run:
+     #    # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable 
+      #    # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID 
+       #   when: on_fail
+        #  command: |
+         #   aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
           
 jobs:
   # Exercise: Creating a Simple Workflow
@@ -71,7 +70,7 @@ workflows:
     jobs:
       # - welcome/run
       #- print_greetings
-      #- upload_file
+      - upload_file
       - download_file:
           requires:
            - upload_file
