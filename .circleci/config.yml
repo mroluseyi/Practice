@@ -124,7 +124,7 @@ jobs:
             aws cloudformation deploy \
             --template-file bucket.yml \
             --stack-name cicdpromotionbucket \
-            --parameter-overrides TheBucket=promotionbucket \
+            --parameter-overrides TheBucket=promotionbucket 
       # Uncomment the step below if yoou wish to upload all contents of the current directory to the new S3 bucket
       - run: aws s3 sync . s3://promotionbucket --delete    
   
