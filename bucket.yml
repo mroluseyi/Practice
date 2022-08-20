@@ -1,11 +1,12 @@
 Parameters:
-  NAME:
+
+  TheBucket:
     Type: String
 Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${NAME}
+      BucketName: !Sub ${TheBucket}
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
